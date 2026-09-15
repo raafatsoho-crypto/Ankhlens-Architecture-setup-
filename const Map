@@ -1,0 +1,29 @@
+// data/datasources/phonetic_mapping_asset_source.dart
+
+class PhoneticMappingAssetSource {
+  final AssetBundle _bundle;
+  Map<String, GlyphSymbol>? _cache;
+
+  PhoneticMappingAssetSource(this._bundle);
+
+  Future<Map<String, GlyphSymbol>> load() async {
+    if (_cache != null) return _cache!;
+
+    final raw = await _bundle.loadString('assets/data/phonetic_mapping.json');
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+
+    _cache = decoded.map((unit, value) {
+      final entry = value as Map<String, dynamic>;
+      return MapEntry(
+        unit,
+        GlyphSymbol(
+          unit: unit,
+          gardinerCode: entry['gardinerCode'] as String,
+          assetPath: entry['assetPath'] as String,
+          note: entry['note'] as String?,
+        ),
+      );
+    });
+    return _cache!;
+  }
+}
