@@ -1,0 +1,37 @@
+// data/repositories/asset_phonetic_mapping_repository.dart
+
+class AssetPhoneticMappingRepository implements PhoneticMappingRepository {
+  final Map<String, GlyphSymbol> _mappings;
+  final Set<String> _digraphs;
+  final GlyphSymbol _fallback;
+
+  AssetPhoneticMappingRepository._(
+    this._mappings,
+    this._digraphs,
+    this._fallback,
+  );
+
+  static Future<AssetPhoneticMappingRepository> create(
+    PhoneticMappingAssetSource source,
+  ) async {
+    final mappings = await source.load();
+    final digraphs = mappings.keys.where((k) => k.length > 1).toSet();
+    final fallback = mappings['_fallback'] ??
+        const GlyphSymbol(
+          unit: '_fallback',
+          gardinerCode: 'UNKNOWN',
+          assetPath: 'assets/glyphs/placeholder.svg',
+          note: 'No direct phonetic equivalent found',
+        );
+    return AssetPhoneticMappingRepository._(mappings, digraphs, fallback);
+  }
+
+  @override
+  GlyphSymbol? lookup(String unit) => _mappings[unit];
+
+  @override
+  Set<String> get knownDigraphs => _digraphs;
+
+  @override
+  GlyphSymbol fallbackGlyph() => _fallback;
+}
