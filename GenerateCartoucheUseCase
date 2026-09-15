@@ -1,0 +1,58 @@
+// domain/usecases/generate_cartouche_usecase.dart
+
+class GenerateCartoucheUseCase {
+  final PhoneticMappingRepository _mappingRepo;
+
+  GenerateCartoucheUseCase(this._mappingRepo);
+
+  /// Converts an English name into an ordered sequence of glyph symbols
+  /// representing a stylized (non-scholarly) Egyptian phonetic rendering.
+  CartoucheResult call(String rawName) {
+    final normalized = _normalize(rawName);
+    if (normalized.isEmpty) {
+      return CartoucheResult.empty();
+    }
+
+    final glyphs = <GlyphSymbol>[];
+    final unmapped = <String>[];
+
+    for (final unit in _tokenize(normalized)) {
+      final mapping = _mappingRepo.lookup(unit);
+      if (mapping != null) {
+        glyphs.add(mapping);
+      } else {
+        unmapped.add(unit);
+        glyphs.add(_mappingRepo.fallbackGlyph());
+      }
+    }
+
+    return CartoucheResult(
+      glyphs: glyphs,
+      sourceName: rawName,
+      unmappedUnits: unmapped, // surfaced to UI so approximation is visible
+    );
+  }
+
+  String _normalize(String input) =>
+      input.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
+
+  /// Greedy longest-match tokenization (e.g. "TH", "SH", "CH" before single letters)
+  List<String> _tokenize(String normalized) {
+    final digraphs = _mappingRepo.knownDigraphs; // e.g. {TH, SH, CH, PH}
+    final tokens = <String>[];
+    var i = 0;
+    while (i < normalized.length) {
+      final pair = i + 1 < normalized.length
+          ? normalized.substring(i, i + 2)
+          : null;
+      if (pair != null && digraphs.contains(pair)) {
+        tokens.add(pair);
+        i += 2;
+      } else {
+        tokens.add(normalized[i]);
+        i += 1;
+      }
+    }
+    return tokens;
+  }
+}
