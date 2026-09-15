@@ -1,0 +1,9 @@
+abstract class PhoneticMappingRepository {
+  GlyphSymbol? lookup(String unit);
+
+  /// All known multi-letter units (2+ chars) the tokenizer should try
+  /// to match, longest first, before falling back to single letters.
+  Set<String> get knownMultiUnits;
+
+  GlyphSymbol fallbackGlyph();
+}
