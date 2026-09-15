@@ -1,0 +1,25 @@
+// domain/usecases/export_cartouche_usecase.dart
+
+class ExportCartoucheUseCase {
+  final CartoucheExportService _exportService;
+
+  ExportCartoucheUseCase(this._exportService);
+
+  Future<ShareResult> call(ui.Image image, {String? nameForFile}) async {
+    final path = await _exportService.saveToTempFile(image, filename: nameForFile);
+    return _exportService.share(path);
+  }
+}
+group('ExportCartoucheUseCase', () {
+  // Uses a fake CartoucheExportService, not the real impl
+  test('saves image before attempting share, in that order', () { ... });
+  test('returns success ShareResult when service reports success', () { ... });
+  test('returns dismissed ShareResult without throwing when user cancels', () { ... });
+  test('propagates/wraps error ShareResult when saveToTempFile throws', () { ... });
+  test('passes provided nameForFile through to saveToTempFile', () { ... });
+});
+// Flagged separately — needs device/integration testing, not pure unit tests
+group('CartoucheExportServiceImpl (integration)', () {
+  test('encodes ui.Image to a valid PNG file on disk', () { ... });
+  test('share() on a platform without share sheet returns unavailable', () { ... });
+});
