@@ -1,0 +1,233 @@
+flowchart TB
+    subgraph Device["Mobile Device (Offline-First)"]
+        UI[Presentation Layer]
+        STATE[Riverpod State/Controllers]
+        DOMAIN[Domain: UseCases + Entities]
+        DATA[Data: Repositories]
+        LOCAL[(SQLite/Drift\nDictionary + History + Config)]
+        ML[On-Device TFLite Inference]
+        ASSETS[(Bundled Assets:\nglyphs, models, audio, branding)]
+    end
+
+    subgraph Cloud["Optional Cloud Services (when online)"]
+        CMS[Content/CMS Sync API]
+        MODELUP[Model Update Service]
+        AGENCYCFG[Agency Config Service]
+        ANALYTICS[Privacy-Conscious Analytics]
+        BACKUP[Cloud Backup]
+    end
+
+    UI --> STATE --> DOMAIN --> DATA
+    DATA --> LOCAL
+    DATA --> ML
+    DATA --> ASSETS
+    DATA -. sync when connected .-> CMS
+    DATA -. sync when connected .-> MODELUP
+    DATA -. sync when connected .-> AGENCYCFG
+    DATA -. optional, consent-based .-> ANALYTICS
+    DATA -. optional, consent-based .-> BACKUP
+flowchart LR
+    P[Presentation\nWidgets, Screens] --> A[Application/State\nRiverpod Providers, Controllers]
+    A --> D[Domain\nEntities, UseCases, Repository Interfaces]
+    D --> R[Data\nRepository Implementations, Mappers]
+    R --> I[Infrastructure\nSQLite/Drift, TFLite, Camera, File System]
+
+ankh_lens/
+├── android/
+├── ios/
+├── assets/
+│   ├── glyphs/              # per-Gardiner-code webp/png sprites, optimized <15kb each
+│   ├── models/               # detection.tflite, classification.tflite, labels.json
+│   ├── audio/                # pronunciation .mp3/.ogg per sign
+│   ├── fonts/                # Egyptian-inspired display font + body font
+│   ├── branding/             # default (non-agency) logo/splash assets
+│   └── localization/         # fallback bundled .arb-derived json, per locale
+├── lib/
+│   ├── app/
+│   │   ├── app.dart                    # MaterialApp/CupertinoApp shell, theme + locale wiring
+│   │   ├── bootstrap.dart              # DI setup, DB open, config load, error zone
+│   │   └── router.dart                 # go_router route table
+│   ├── core/
+│   │   ├── constants/                  # Gardiner category enums, thresholds, asset paths
+│   │   ├── errors/                     # Failure/Exception hierarchy (see §24)
+│   │   ├── extensions/                 # BuildContext, String, DateTime helpers
+│   │   ├── localization/               # AppLocalizations wiring, locale resolver
+│   │   ├── routing/                    # route guards (e.g. agency-config-loaded guard)
+│   │   ├── services/                   # cross-feature services: GlyphAssetService,
+│   │   │                                #   AudioPlaybackService, ConnectivityService,
+│   │   │                                #   AgencyConfigService, AnalyticsService
+│   │   ├── theme/                      # ThemeData builder driven by AgencyTheme
+│   │   ├── utils/                      # phonetic utils, image utils, logger
+│   │   └── widgets/                    # shared UI: GoldButton, ConfidenceBadge,
+│   │                                    #   ParchmentCard, LoadingShimmer
+│   ├── features/
+│   │   ├── scanner/
+│   │   │   ├── data/        # ScannerRepositoryImpl, MLInferenceService (TFLite bindings)
+│   │   │   ├── domain/      # DetectionResult, DetectGlyphsUseCase, ScannerRepository (interface)
+│   │   │   └── presentation/# ScannerScreen, ScannerController, ScannerState, ResultSheet
+│   │   ├── dictionary/
+│   │   │   ├── data/        # DictionaryRepositoryImpl (Drift), DTOs/mappers
+│   │   │   ├── domain/      # GlyphEntry entity, SearchGlyphsUseCase, GetByCategoryUseCase
+│   │   │   └── presentation/# DictionaryScreen, CategoryGrid, GlyphDetailScreen
+│   │   ├── cartouche/
+│   │   │   ├── data/        # PhoneticMappingRepositoryImpl, CartoucheRendererImpl
+│   │   │   ├── domain/      # CartoucheResult, GlyphToken, GenerateCartoucheUseCase
+│   │   │   └── presentation/# CartoucheMakerScreen, CartouchePreviewScreen
+│   │   ├── tour/
+│   │   │   ├── data/        # TourRepositoryImpl (reads AgencyConfig cache)
+│   │   │   ├── domain/      # TourConfig, ItineraryDay, ContactGuideUseCase
+│   │   │   └── presentation/# MyTourScreen
+│   │   ├── agency/
+│   │   │   ├── data/        # AgencyConfigRepositoryImpl (local JSON + optional remote sync)
+│   │   │   ├── domain/      # AgencyConfig, AgencyTheme, AgencyContact, GuideConfig
+│   │   │   └── presentation/# (mostly consumed via core/theme, minimal own UI)
+│   │   ├── favorites/
+│   │   │   ├── data/  domain/  presentation/
+│   │   ├── history/
+│   │   │   ├── data/  domain/  presentation/
+│   │   └── settings/
+│   │       ├── data/  domain/  presentation/  # language, accessibility, privacy controls
+│   ├── localization/
+│   │   ├── app_en.arb  app_es.arb  app_fr.arb  app_de.arb
+│   │   ├── app_it.arb  app_ru.arb  app_ar.arb
+│   └── main.dart
+├── test/
+│   ├── features/<feature>/domain/...     # UseCase unit tests
+│   ├── features/<feature>/presentation/...# widget tests
+│   └── core/...
+├── integration_test/
+│   └── app_test.dart
+└── pubspec.yaml
+name: ankh_lens
+description: AnkhLens — offline-first Egyptian hieroglyph scanner and tourist companion.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management / DI
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Offline structured storage
+  drift: ^2.18.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
+  # Camera + on-device ML
+  camera: ^0.11.0
+  tflite_flutter: ^0.11.0
+  image: ^4.2.0
+
+  # Cartouche rendering / sharing
+  flutter_svg: ^2.0.10
+  share_plus: ^9.0.0
+
+  # Audio
+  just_audio: ^0.9.40
+
+  # i18n
+  intl: ^0.19.0
+
+  # Security
+  flutter_secure_storage: ^9.2.2
+
+  # Connectivity (for optional online sync fallback)
+  connectivity_plus: ^6.0.3
+
+  # Models / serialization
+  equatable: ^2.0.5
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+  build_runner: ^2.4.11
+  riverpod_generator: ^2.4.0
+  freezed: ^2.5.5
+  json_serializable: ^6.8.0
+  drift_dev: ^2.18.0
+
+  mocktail: ^1.0.4
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true   # enables gen-l10n from .arb files
+
+  assets:
+    - assets/glyphs/
+    - assets/models/
+    - assets/audio/
+    - assets/branding/
+    - assets/localization/
+
+  fonts:
+    - family: AnkhDisplay
+      fonts:
+        - asset: assets/fonts/AnkhDisplay-Regular.ttf
+        - asset: assets/fonts/AnkhDisplay-Bold.ttf
+          weight: 700
+    - family: AnkhBody
+      fonts:
+        - asset: assets/fonts/AnkhBody-Regular.ttf
+        - asset: assets/fonts/AnkhBody-Italic.ttf
+          style: italic
+sequenceDiagram
+    participant U as Tourist
+    participant UI as ScannerScreen
+    participant C as ScannerController
+    participant UC as DetectGlyphsUseCase
+    participant ML as MLInferenceService (TFLite)
+    participant Dict as DictionaryRepository (Drift)
+
+    U->>UI: Points camera / taps capture
+    UI->>C: onFrameCaptured(frame)
+    C->>UC: execute(frame)
+    UC->>ML: preprocess + infer(frame)
+    ML-->>UC: List<RawDetection> (bbox, classId, score)
+    UC->>UC: confidence filtering + NMS
+    UC->>Dict: getByGardinerCode(classId)
+    Dict-->>UC: GlyphEntry(s)
+    UC-->>C: List<DetectionResult>
+    C-->>UI: ScannerState.success(results)
+    UI->>U: Draws bounding boxes + opens ResultSheet
+flowchart LR
+    A[Name Input] --> B[Language Detection]
+    B --> C[Latin/Arabic Normalization]
+    C --> D[Phonetic Normalization]
+    D --> E[Phonetic Segmentation]
+    E --> F[Egyptian Consonantal Approximation]
+    F --> G[Glyph Selection + Ordering]
+    G --> H[CartoucheResult built\nwith isApproximation=true]
+    H --> I[Cartouche Renderer]
+    I --> J[PNG Export]
+    J --> K[Share Sheet: WhatsApp/Instagram]
+flowchart TB
+    Start[App Launch] --> Load{AgencyConfig\ncached locally?}
+    Load -- yes --> Apply[Apply AgencyTheme + Contact + Tour]
+    Load -- no --> Default[Load bundled default config]
+    Apply --> Online{Connectivity\navailable?}
+    Default --> Online
+    Online -- yes --> Sync[Fetch latest AgencyConfig from service]
+    Online -- no --> Skip[Continue with cached/default config]
+    Sync --> Persist[Persist to local encrypted storage]
+    Persist --> Ready[App Ready]
+    Skip --> Ready
+
