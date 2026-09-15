@@ -1,2 +1,3 @@
 # Ankhlens-Architecture-setup-
-Egyptology 
+Hieroglyphic recognition & translation 
+offline dictionary 
