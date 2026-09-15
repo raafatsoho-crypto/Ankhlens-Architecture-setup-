@@ -1,0 +1,14 @@
+group('PhoneticMappingAssetSource', () {
+  test('parses valid JSON into GlyphSymbol map', () { ... });
+  test('caches result on second load() call (no repeated asset read)', () { ... });
+  test('throws/propagates on malformed JSON', () { ... });
+});
+
+group('AssetPhoneticMappingRepository', () {
+  test('lookup returns correct GlyphSymbol for known single letter', () { ... });
+  test('lookup returns correct GlyphSymbol for known digraph', () { ... });
+  test('lookup returns null for unknown unit', () { ... });
+  test('knownDigraphs contains only multi-character keys', () { ... });
+  test('fallbackGlyph returns configured "_fallback" entry when present', () { ... });
+  test('fallbackGlyph returns hardcoded default when "_fallback" missing from JSON', () { ... });
+});
