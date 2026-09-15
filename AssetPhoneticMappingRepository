@@ -1,0 +1,13 @@
+group('GenerateCartoucheUseCase - tokenization', () {
+  test('trigraph is matched before digraph or single letters', () { ... });
+  // e.g. mapping table has {"THE": ..., "TH": ..., "T": ..., "H": ..., "E": ...}
+  // input "THE" -> single token ["THE"], not ["TH","E"] or ["T","H","E"]
+
+  test('digraph is matched when no trigraph matches at that position', () { ... });
+  test('falls back to single letter when no multi-unit matches', () { ... });
+  test('overlapping candidates: longest available match wins at each position', () { ... });
+  // e.g. "ASH" with {"SH","ASH"?} not applicable here since ASH starts at i=0 -
+  // clarify with a table that actually has 3-char + 2-char overlap at same start index
+  test('mapping table with only digraphs (no trigraphs) still tokenizes correctly', () { ... });
+  test('empty knownMultiUnits set falls back to pure single-letter tokenization', () { ... });
+});
