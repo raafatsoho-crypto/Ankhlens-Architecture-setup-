@@ -1,0 +1,33 @@
+{
+  "name": "AnkhLens Flutter Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17"
+    }
+  },
+
+  "onCreateCommand": "git clone --depth 1 -b stable https://github.com/flutter/flutter.git $HOME/flutter",
+
+  "postCreateCommand": "echo 'export PATH=\"$PATH:$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin\"' >> ~/.bashrc && export PATH=\"$PATH:$HOME/flutter/bin\" && flutter doctor && flutter precache && flutter config --enable-web && cd ${containerWorkspaceFolder} && flutter pub get",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.flutter",
+        "Dart-Code.dart-code"
+      ],
+      "settings": {
+        "dart.flutterSdkPath": "~/flutter",
+        "terminal.integrated.env.linux": {
+          "PATH": "${env:PATH}:${env:HOME}/flutter/bin"
+        }
+      }
+    }
+  },
+
+  "forwardPorts": [8080],
+
+  "remoteUser": "vscode"
+}
