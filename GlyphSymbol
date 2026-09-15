@@ -1,0 +1,31 @@
+// domain/repositories/phonetic_mapping_repository.dart
+
+abstract class PhoneticMappingRepository {
+  /// Returns the glyph mapping for a normalized letter or digraph
+  /// (e.g. "A", "TH"), or null if no mapping exists.
+  GlyphSymbol? lookup(String unit);
+
+  /// All known multi-letter units (digraphs/trigraphs) that tokenization
+  /// should try to match before falling back to single letters.
+  /// Must be sorted longest-first if lengths vary.
+  Set<String> get knownDigraphs;
+
+  /// Placeholder glyph used when a unit has no mapping, so the UI/renderer
+  /// can still produce a complete (if approximate) cartouche.
+  GlyphSymbol fallbackGlyph();
+} 
+// domain/entities/glyph_symbol.dart
+
+class GlyphSymbol {
+  final String unit;        // the letter/digraph this represents, e.g. "TH"
+  final String gardinerCode; // e.g. "G17" — reference id, not rendering detail
+  final String assetPath;    // path to the glyph's vector/image asset
+  final String? note;        // optional: "approximate — no direct phonetic equivalent"
+
+  const GlyphSymbol({
+    required this.unit,
+    required this.gardinerCode,
+    required this.assetPath,
+    this.note,
+  });
+}
