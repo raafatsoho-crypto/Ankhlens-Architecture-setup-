@@ -1,0 +1,47 @@
+domain/
+  entities/
+    glyph_symbol.dart                      # unit, gardinerCode, assetPath, widthRatio, note
+    positioned_glyph.dart                  # PositionedGlyph, CartoucheLayoutResult
+  repositories/
+    phonetic_mapping_repository.dart       # abstract interface (lookup, knownMultiUnits, fallbackGlyph)
+  services/
+    cartouche_layout_strategy.dart         # abstract interface
+    vertical_stacked_cartouche_layout.dart # traditional default
+    horizontal_cartouche_layout.dart       # alternate strategy
+    cartouche_export_service.dart          # abstract interface (saveToTempFile, share)
+  usecases/
+    generate_cartouche_usecase.dart        # tokenizer + glyph mapping orchestration
+    export_cartouche_usecase.dart          # save-then-share orchestration
+
+data/
+  datasources/
+    phonetic_mapping_asset_source.dart     # loads/caches assets/data/phonetic_mapping.json
+  repositories/
+    asset_phonetic_mapping_repository.dart # implements PhoneticMappingRepository
+  services/
+    cartouche_renderer_impl.dart           # Canvas drawing + PNG ui.Image output
+    cartouche_export_service_impl.dart     # path_provider + share_plus calls
+
+assets/
+  data/
+    phonetic_mapping.json                  # letter/digraph/trigraph -> glyph data
+  glyphs/
+    placeholder.svg                        # fallback glyph asset
+    (individual glyph assets referenced by assetPath in phonetic_mapping.json)
+
+test/
+  domain/
+    usecases/
+      generate_cartouche_usecase_test.dart
+      export_cartouche_usecase_test.dart
+    services/
+      vertical_stacked_cartouche_layout_test.dart
+      horizontal_cartouche_layout_test.dart
+  data/
+    datasources/
+      phonetic_mapping_asset_source_test.dart
+    repositories/
+      asset_phonetic_mapping_repository_test.dart
+    services/
+      cartouche_renderer_impl_test.dart       # flagged integration, not pure unit
+      cartouche_export_service_impl_test.dart # flagged integration, not pure unit
