@@ -1,0 +1,11 @@
+group('GenerateCartoucheUseCase', () {
+  test('empty string returns empty result', () { ... });
+  test('whitespace-only input returns empty result', () { ... });
+  test('simple name maps every letter to a glyph', () { ... }); // e.g. "SAM"
+  test('digraphs are matched greedily before single letters', () { ... }); // "THOMAS" -> TH, O, M, A, S
+  test('unmapped letters fall back to placeholder glyph and are reported', () { ... });
+  test('non-alpha characters are stripped before tokenization', () { ... }); // "Jo-Ann 2" -> "JOANN"
+  test('lowercase input is normalized to uppercase mapping', () { ... });
+  test('result preserves original sourceName for display, unmodified', () { ... });
+  test('isFullyMapped is false when any unit falls back', () { ... });
+});
