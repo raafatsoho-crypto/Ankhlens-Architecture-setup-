@@ -56,3 +56,19 @@ class GenerateCartoucheUseCase {
     return tokens;
   }
 }
+class CartoucheResult {
+  final List<GlyphSymbol> glyphs;
+  final String sourceName;
+  final List<String> unmappedUnits;
+
+  const CartoucheResult({
+    required this.glyphs,
+    required this.sourceName,
+    required this.unmappedUnits,
+  });
+
+  factory CartoucheResult.empty() =>
+      const CartoucheResult(glyphs: [], sourceName: '', unmappedUnits: []);
+
+  bool get isFullyMapped => unmappedUnits.isEmpty;
+}
