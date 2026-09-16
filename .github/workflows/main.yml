@@ -30,14 +30,19 @@ jobs:
           flutter create --org com.ankhlens --project-name ankhlens .
           rm -rf lib
           cp -r ../lib .
+          # Copy your actual dependency manifest and lockfile
+          cp ../pubspec.yaml .
+          if [ -f ../pubspec.lock ]; then cp ../pubspec.lock .; fi
+          # Copy assets, fonts, or any other top-level folders your app needs
+          if [ -d ../assets ]; then cp -r ../assets .; fi
           flutter pub get
 
-      - name: Build APK (Debug)
+      - name: Build APK (Release)
         working-directory: temp_build
-        run: flutter build apk --debug
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: temp_build/build/app/outputs/flutter-apk/app-debug.apk
+          name: app-release
+          path: temp_build/build/app/outputs/flutter-apk/app-release.apk
